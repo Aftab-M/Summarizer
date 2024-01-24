@@ -1,11 +1,19 @@
-import 'dart:html';
+// import 'dart:html';
 import 'dart:typed_data';
-
+import 'package:path/path.dart' as path;
 import 'package:file_picker/file_picker.dart';
 import 'package:file_picker/src/platform_file.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'dart:async';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:summarizer/firebase_options.dart';
+import 'dart:js' as js;
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -62,6 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Uint8List? fileBytes = result.files.first.bytes;
                   String fileName = result.files.first.name;
                   debugPrint(" File name : ${fileName} ");
+                  uploadFile(fileName, fileBytes);
                 }
               },
               child: const Text('Pick a file'),
@@ -74,5 +83,19 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  uploadFile(fileName, fileBytes) async {
+    try {
+      Reference storeRef = FirebaseStorage.instance.ref();
+
+      Reference pdfRef = storeRef.child('pdfs/$fileName');
+      // await pdfRef
+      //     .putData(fileBytes)
+      //     .then((p0) => debugPrint('File Uploaded Successfully !!!'));
+      js.context.callMethod('sendback', ['abc']);
+    } catch (e) {
+      print("Got error ${e.toString()}");
+    }
   }
 }
