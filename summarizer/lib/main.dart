@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:summarizer/ChatScreen.dart';
 import 'package:summarizer/firebase_options.dart';
 import 'package:http/http.dart' as http;
 import 'package:summarizer/Logic.dart';
@@ -26,7 +28,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Summarizer'),
+      // home: const MyHomePage(title: 'Summarizer'),
+      home: ChatScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -102,9 +105,20 @@ class _MyHomePageState extends State<MyHomePage> {
                     // hoverColor: Colors.black,
                     suffix: IconButton(
                         padding: const EdgeInsets.all(20),
-                        onPressed: () {
-                          debugPrint(_contextTextController.value.text.length
-                              .toString());
+                        onPressed: () async {
+                          if (_contextTextController.value.text.length > 2) {
+                            await push(
+                                context,
+                                Center(
+                                  child: CircularProgressIndicator(),
+                                ));
+                            Timer(Duration(seconds: 3), () {
+                              pop(context);
+                              push(context, ChatScreen());
+                            });
+                          } else {
+                            snack(context, 'Paragraph is too short !');
+                          }
                         },
                         icon: Icon(Icons.send, color: Colors.green)),
                     enabledBorder: OutlineInputBorder(),
