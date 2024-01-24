@@ -1,15 +1,12 @@
-// import 'dart:html';
+import 'dart:convert';
 import 'dart:typed_data';
-import 'package:path/path.dart' as path;
 import 'package:file_picker/file_picker.dart';
-import 'package:file_picker/src/platform_file.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'dart:async';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:summarizer/firebase_options.dart';
-import 'dart:js' as js;
+import 'package:http/http.dart' as http;
+import 'package:summarizer/Logic.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,8 +42,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController _contextTextController =
+      new TextEditingController();
   @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -79,6 +80,38 @@ class _MyHomePageState extends State<MyHomePage> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.all(20)),
             ),
+            const Padding(
+              padding: EdgeInsets.only(top: 50, bottom: 50),
+              child: Text(" - OR - "),
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                  top: 20,
+                  bottom: 20,
+                  left: (width < 500) ? 20 : 100,
+                  right: (width < 500) ? 20 : 100),
+              child: TextField(
+                controller: _contextTextController,
+                maxLines: 10,
+                decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(30),
+                    // suffixIcon: IconButton(
+                    //     onPressed: () {},
+                    //     icon: const Icon(Icons.send),
+                    //     alignment: Alignment.bottomRight),
+                    // hoverColor: Colors.black,
+                    suffix: IconButton(
+                        padding: const EdgeInsets.all(20),
+                        onPressed: () {
+                          debugPrint(_contextTextController.value.text.length
+                              .toString());
+                        },
+                        icon: Icon(Icons.send, color: Colors.green)),
+                    enabledBorder: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(),
+                    hintText: 'A paragraph with more than 100 words...'),
+              ),
+            ),
           ],
         ),
       ),
@@ -87,13 +120,40 @@ class _MyHomePageState extends State<MyHomePage> {
 
   uploadFile(fileName, fileBytes) async {
     try {
+      print('In uploadFile');
       Reference storeRef = FirebaseStorage.instance.ref();
 
       Reference pdfRef = storeRef.child('pdfs/$fileName');
-      // await pdfRef
-      //     .putData(fileBytes)
-      //     .then((p0) => debugPrint('File Uploaded Successfully !!!'));
-      js.context.callMethod('sendback', ['abc']);
+
+      String cont = "";
+
+      await pdfRef.putData(fileBytes).then((p0) {
+        debugPrint('File Uploaded Successfully !!! $p0');
+        pdfRef.getDownloadURL().then((value) async {
+          // debugPrint('Value is : $value');
+          Map<String, dynamic> pdfUrl = {'url': value};
+
+          final res = await http.post(Uri.parse('http://localhost:3000/parse'),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode(pdfUrl));
+
+          print("Got the response : ${res.body}");
+          cont = res.body;
+        });
+      });
+
+      final Map<String, dynamic> data = {
+        'ques': 'Can you summarize this paragraph for me ?',
+        'context': cont,
+      };
+
+      // CircularProgressIndicator();
+      final response = await http.post(
+          Uri.parse('http://localhost:3000/question'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(data));
+
+      print("Response is : ${response.body}");
     } catch (e) {
       print("Got error ${e.toString()}");
     }
