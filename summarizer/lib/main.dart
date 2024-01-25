@@ -29,7 +29,9 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // home: const MyHomePage(title: 'Summarizer'),
-      home: ChatScreen(),
+      home: ChatScreen(
+          cont:
+              'I could give a damn about the metrics, roll up in the beema bentley lexus, Logic stay connected to the block like Im tetris.'),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -45,6 +47,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String cont = "";
   final TextEditingController _contextTextController =
       new TextEditingController();
   @override
@@ -114,7 +117,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ));
                             Timer(Duration(seconds: 3), () {
                               pop(context);
-                              push(context, ChatScreen());
+                              push(
+                                  context,
+                                  ChatScreen(
+                                      cont: _contextTextController.value.text));
                             });
                           } else {
                             snack(context, 'Paragraph is too short !');
@@ -139,8 +145,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       Reference pdfRef = storeRef.child('pdfs/$fileName');
 
-      String cont = "";
-
       await pdfRef.putData(fileBytes).then((p0) {
         debugPrint('File Uploaded Successfully !!! $p0');
         pdfRef.getDownloadURL().then((value) async {
@@ -153,21 +157,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
           print("Got the response : ${res.body}");
           cont = res.body;
+          push(context, ChatScreen(cont: cont));
         });
       });
 
-      final Map<String, dynamic> data = {
-        'ques': 'Can you summarize this paragraph for me ?',
-        'context': cont,
-      };
+      // final Map<String, dynamic> data = {
+      //   'ques': 'Can you summarize this paragraph for me ?',
+      //   'context': cont,
+      // };
 
-      // CircularProgressIndicator();
-      final response = await http.post(
-          Uri.parse('http://localhost:3000/question'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(data));
+      // // CircularProgressIndicator();
+      // final response = await http.post(
+      //     Uri.parse('http://localhost:3000/question'),
+      //     headers: {'Content-Type': 'application/json'},
+      //     body: jsonEncode(data));
 
-      print("Response is : ${response.body}");
+      // print("Response is : ${response.body}");
     } catch (e) {
       print("Got error ${e.toString()}");
     }

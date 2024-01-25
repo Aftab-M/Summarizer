@@ -1,23 +1,28 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:summarizer/Logic.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ChatScreen extends StatefulWidget {
+  final String cont;
+  const ChatScreen({required this.cont});
   @override
   ChatScreenState createState() => ChatScreenState();
 }
 
 TextEditingController _txt = TextEditingController();
 List conversation = [
-  {'who': 'me', 'res': 'akjb askhfbskdh  sldhjfb'},
-  {'who': 'other', 'res': 'akjb askhfbskdh  sldhjfb'},
-  {'who': 'me', 'res': 'akjb askhfbskdh  sldhjfb'},
-  {'who': 'me', 'res': 'akjb askhfbskdh  sldhjfb'},
-  {'who': 'other', 'res': 'akjb askhfbskdh  sldhjfb'},
+  {
+    'who': 'other',
+    'res': 'Hello There ! \nAsk me anything about the provided text...'
+  },
 ];
+
+// String cont = "";
 
 class ChatScreenState extends State<ChatScreen> {
   final Uri uri = Uri.parse('http://localhost:3000/question');
@@ -69,11 +74,19 @@ class ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     setState(() {
                       conversation.add({
                         'who': 'me',
                         'res': _txt.value.text,
+                      });
+                      conversation.add({
+                        'who': 'other',
+                        'res': 'Reading the provided material for answers...'
+                      });
+
+                      Timer(Duration(seconds: 2), () {
+                        communicate();
                       });
                     });
                   },
@@ -95,7 +108,8 @@ class ChatScreenState extends State<ChatScreen> {
   chatSection() {
     return Container(
         height: 200,
-        padding: const EdgeInsets.all(20),
+        padding:
+            const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 100),
         width: MediaQuery.of(context).size.width,
         child: ListView.builder(
             itemCount: conversation.length,
@@ -104,12 +118,12 @@ class ChatScreenState extends State<ChatScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
-                    // constraints: BoxConstraints(maxWidth: 200),
                     alignment: (conversation[index]['who'] == 'me')
                         ? Alignment.centerRight
                         : Alignment.centerLeft,
                     child: Container(
                         padding: const EdgeInsets.all(15),
+                        constraints: BoxConstraints(maxWidth: 400),
                         // width: 300,
                         decoration: BoxDecoration(
                           // border: Border.all(),
@@ -129,5 +143,57 @@ class ChatScreenState extends State<ChatScreen> {
                 ),
               );
             }));
+  }
+
+  // uploadFile(fileName, fileBytes) async {
+  //   try {
+  //     print('In uploadFile');
+  //     Reference storeRef = FirebaseStorage.instance.ref();
+
+  //     Reference pdfRef = storeRef.child('pdfs/$fileName');
+
+  //     // String cont = "";
+
+  //     await pdfRef.putData(fileBytes).then((p0) {
+  //       debugPrint('File Uploaded Successfully !!! $p0');
+  //       pdfRef.getDownloadURL().then((value) async {
+  //         // debugPrint('Value is : $value');
+  //         Map<String, dynamic> pdfUrl = {'url': value};
+
+  //         final res = await http.post(Uri.parse('http://localhost:3000/parse'),
+  //             headers: {'Content-Type': 'application/json'},
+  //             body: jsonEncode(pdfUrl));
+
+  //         print("Got the response : ${res.body}");
+  //         setState(() {
+  //           cont = res.body;
+  //         });
+  //       });
+  //     });
+  //   } catch (e) {
+  //     print("Got error ${e.toString()}");
+  //   }
+  // }
+
+  communicate() async {
+    final Map<String, dynamic> data = {
+      'ques': _txt.value.text,
+      'context': widget.cont,
+    };
+
+    // CircularProgressIndicator();
+    final response = await http.post(
+        Uri.parse('http://localhost:3000/question'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data));
+
+    print("Response is : ${response.body}");
+    setState(() {
+      conversation.removeLast();
+      conversation.add({
+        'who': 'other',
+        'res': response.body,
+      });
+    });
   }
 }
