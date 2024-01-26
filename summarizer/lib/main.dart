@@ -28,10 +28,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // home: const MyHomePage(title: 'Summarizer'),
-      home: ChatScreen(
-          cont:
-              'I could give a damn about the metrics, roll up in the beema bentley lexus, Logic stay connected to the block like Im tetris.'),
+      home: const MyHomePage(title: 'Summarizer'),
+      // home: ChatScreen(
+      //     cont:
+      //         'I could give a damn about the metrics, roll up in the beema bentley lexus, Logic stay connected to the block like Im tetris.'),
       debugShowCheckedModeBanner: false,
     );
   }

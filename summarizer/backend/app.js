@@ -37,7 +37,7 @@ async function run(req, res){
 
 
     const model = genAI.getGenerativeModel({model: 'gemini-pro'});
-    const prompt = `Answer in 20 words, the question : ${ques}, in context of the following text : ${context}`;
+    const prompt = `Answer in 50 words, the question : ${ques}, in context of the following text : ${context}, and if the question is not realted to the context, follow your general answers in short.`;
 
     const result = await model.generateContent(prompt);
     const resp = await result.response;
@@ -82,3 +82,8 @@ async function getPdfFromUrl(url){
 }
 
 // getPdfFromUrl()
+
+
+
+
+// 
