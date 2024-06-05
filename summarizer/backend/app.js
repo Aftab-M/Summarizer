@@ -14,7 +14,7 @@ const axios = require('axios')
 
 
 app.get('/', (req, res)=>{
-    res.send('Hello from the other siiiiiiiiiide !')
+    res.send('Server running...')
 })
 
 
