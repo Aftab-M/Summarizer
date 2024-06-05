@@ -57,16 +57,9 @@ app.post('/parse', async(req, res)=>{
 })
 
 
-// commenting, so that I can put a green brick in the contribution chart for today. ;)
-async function doesNothing(){}
 
 async function getPdfFromUrl(url){
-    // var url = "https://firebasestorage.googleapis.com/v0/b/chatapp-846fc.appspot.com/o/pdfs%2FViewResult1%20(2)%20(1).pdf?alt=media&token=5d8aef4b-c4d8-450c-96e3-49acd6746834";
-    // const dataBuffer = fs.readFileSync(url);
-    // const data = await pdf(dataBuffer);
-    // const text = data.text;
-    // console.log('PDF Text is : ')
-    // console.log(text)
+    
 
     try{
         const resp = await axios.get(url, {responseType:'arraybuffer'})
